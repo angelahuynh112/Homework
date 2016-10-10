@@ -1,0 +1,121 @@
+---
+title: "Computing Assignment 3"
+author: "Angela Huynh"
+date: "October 11, 2016"
+output: pdf_document
+---
+# Question 1
+
+Use GitHub to turn in the first three homework assignments. Make sure the teacher (couthcommander) and TA (trippcm) are collaborators.
+
+Commit each assignment individually. This means your repository should have at least three commits. 
+
+# Question 2
+
+Write a simulation to calculate the power for the following study design. The study has two variables, treatment group and outcome. There are two treatment groups (0, 1) and they should be assigned randomly with equal probability. The outcome should be a random normal variable with a mean of 60 and standard deviation of 20. If a patient is in the treatment group, add 5 to the outcome. 5 is the true treatment effect. Create a linear model for the outcome by the treatment group, and extract the p-value (hint: see assigment1, binomial). Test if the p-value is less than or equal to the alpha level, which should be set to 0.05.
+
+Repeat this procedure 1000 times. The power is calculated by finding the percentage of times the p-value is less than or equal to the alpha level. Use the set.seed command so that the professor can reproduce your results.
+
+Find the power when the sample size is 100 patients.Find the power when the sample size is 1000 patients.
+
+```{r, tidy=TRUE}
+set.seed(100) # set seed to replicate outcome
+n <- 1000 # number of times we repeat procedure
+alpha <- .05
+pvalue.1 <- vector() # use this vector to find the power when n = 100
+pvalue.2 <- vector() # use this vector to find the power when n = 1000
+
+for(i in (1:n)) {
+  treatment <- rbinom(n=100, size=1, prob=.5)
+  outcome <- rnorm(n=100, mean=60, sd=20)
+  for(a in (1:100)) {
+    if (treatment[a] == 1) {
+      outcome[a] <- outcome[a] + 5
+    }
+  }
+  sim <- lm(outcome ~ treatment)
+  pvalue <- coef(summary(sim))[2,4]
+  pvalue.1 <- c(pvalue.1,pvalue <= .05)
+}
+
+mean(pvalue.1) # power when sample size is 100
+
+for(i in (1:n)) {
+  treatment1k <- rbinom(n=1000, size=1, prob=.5)
+  outcome1k <- rnorm(n=1000, mean=60, sd=20)
+  for(a in (1:1000)) {
+    if (treatment1k[a] == 1) {
+      outcome1k[a] <- outcome1k[a] + 5
+    }
+  }
+  sim1k <- lm(outcome1k ~ treatment1k)
+  pvalue1k <- coef(summary(sim1k))[2,4]
+  pvalue.2 <- c(pvalue.2,pvalue1k <= .05)
+}
+
+mean(pvalue.2) # power when sample size is 1000
+```
+
+# Question 3
+
+Obtain a copy of the football-values lecture. Save the 2016/proj_wr16.csv file in your working directory. Read in the data set and remove the first two columns.
+
+Show the correlation matrix of this data set. 
+
+```{r, tidy=TRUE}
+setwd("~/Documents/Vanderbilt 1/Semester 1/BIOS 6301/Assignments")
+football.data <- read.csv("~/Documents/Vanderbilt 1/Semester 1/BIOS 6301/Assignments/proj_wr16.csv")
+# View(football.data)
+
+# remove first two columns
+fb.data <- football.data[-c(1:2)]
+
+# correlation matrix of data set
+rho.fb <- cor(fb.data)
+
+vcov.fb <- var(fb.data)
+means.fb <- colMeans(fb.data)
+```
+
+Generate a data set with 30 rows that has a similar correlation structure. Repeat the procedure 10,000 times and return the mean correlation matrix. 
+
+```{r, tidy=TRUE}
+library(MASS)
+
+loops <- 10000
+avCor <- 0
+
+for(i in (1:10000)){
+  fb.sim <- mvrnorm(30, mu = means.fb, Sigma = vcov.fb)
+  avCor <- avCor + cor(fb.sim)/loops
+}
+avCor # mean correlation matrix, similar structure
+```
+
+Generate a data set with 30 rows that has the exact correlation structure as the original data set.
+
+```{r, tidy=TRUE}
+loops <- 10000
+avCorExact <- 0
+
+for(i in (1:10000)){
+  fb.sim <- mvrnorm(30, mu = means.fb, Sigma = vcov.fb, empirical=TRUE)
+  avCorExact <- avCorExact + cor(fb.sim)/loops
+}
+avCorExact # mean correlation matrix, exact structure
+```
+
+# Question 4
+
+Use \LaTeX to create the following expressions.
+
+1. $$P(B) = \sum_{j}P(B \vert A_j)P(A_j), \Rightarrow P(A_i \vert B) = \frac{P(B \vert A_i)P(A_i)}{\sum_{j}P(B \vert A_j)P(A_j)}$$
+
+2. $$\hat{f}(\zeta) = \int_{-\infty}^{\infty}f(x)e^{-2\pi i x \zeta}dx$$
+
+3. $$\mathbf{J} = \frac{d\mathbf{f}}{d\mathbf{x}} =
+\left[\frac{\partial\mathbf{f}}{\partial x_1} \dots \frac{\partial\mathbf{f}}{\partial x_n}\right] = \begin{bmatrix}
+\frac{\partial\mathbf{f}_1}{\partial x_1} & \dots & \frac{\partial\mathbf{f}_1}{\partial x_n} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial\mathbf{f}_m}{\partial x_1} & \dots & \frac{\partial\mathbf{f}_m}{\partial x_n}
+\end{bmatrix}$$
